@@ -1,0 +1,75 @@
+---
+import Slide from "../components/Slide.astro";
+---
+
+<Slide>
+	<h2>From landmarks to meaning</h2>
+	<div class="pipeline">
+		<div class="step">
+			<span class="big">21 × (x, y, z)</span>
+			<span class="caption">one hand =<br />63 numbers</span>
+		</div>
+		<span class="arrow fragment" data-fragment-index="1">→</span>
+		<div class="step fragment" data-fragment-index="1">
+			<span class="big">normalize</span>
+			<span class="caption">wrist at origin,<br />scale &amp; mirror out</span>
+		</div>
+		<span class="arrow fragment" data-fragment-index="2">→</span>
+		<div class="step fragment" data-fragment-index="2">
+			<span class="big">classify</span>
+			<span class="caption">tiny model (kNN)<br />over 63-dim vectors</span>
+		</div>
+		<span class="arrow fragment" data-fragment-index="3">→</span>
+		<div class="step highlight fragment" data-fragment-index="3">
+			<span class="big">“A”</span>
+			<span class="caption">a hand shape<br />becomes a label</span>
+		</div>
+	</div>
+	<ul>
+		<li class="fragment">No giant model needed — the landmarker already did the hard part</li>
+		<li class="fragment">This is exactly how a <strong>sign alphabet</strong> becomes machine-readable</li>
+	</ul>
+	<aside class="notes">
+		Once you have clean, normalized landmarks, gesture classification is almost embarrassingly simple — a kNN over a
+		few dozen recorded samples per letter works live on stage. The heavy lifting is all in the landmark model.
+	</aside>
+</Slide>
+
+<style>
+	.pipeline {
+		display: flex;
+		align-items: stretch;
+		justify-content: center;
+		gap: 0.4em;
+		margin: 1em 0;
+	}
+	.step {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 0.3em;
+		padding: 0.5em 0.6em;
+		border: 1px solid #334155;
+		border-radius: 10px;
+		background: rgb(15 23 42 / 0.6);
+
+		&.highlight {
+			border-color: #4ade80;
+		}
+	}
+	.big {
+		font-size: 0.75em;
+		font-weight: bold;
+	}
+	.caption {
+		font-size: 0.4em;
+		color: #94a3b8;
+	}
+	.arrow {
+		align-self: center;
+		color: #4ade80;
+	}
+	ul {
+		font-size: 0.7em;
+	}
+</style>

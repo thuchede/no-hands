@@ -1,14 +1,9 @@
 const events = {
-	eventName: {
-		name: "Event #1",
-		date: "01/01/2025",
-		someUrl: "https://some.url",
-	},
-	otherEventName: {
-		name: "Event #2",
-		date: "01/01/2026",
-		someUrl: "https://some.url",
+	zenika2026: {
+		name: "Zenika",
+		date: "2026",
+		someUrl: "https://github.com/your-user/no-hands",
 	},
 };
 
-export const currentEvent = events.eventName; // or Object.values(events).at(-1)!
+export const currentEvent = events.zenika2026; // or Object.values(events).at(-1)!

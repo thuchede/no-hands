@@ -1,0 +1,281 @@
+---
+/**
+ * Presenter-only page: record ASL fingerspelling samples for the kNN.
+ * Samples persist in localStorage; export the JSON to
+ * public/samples/asl-samples.json to bundle them with the deck.
+ */
+import { withBase } from "../lib/paths";
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href={withBase("favicon.svg")} />
+		<title>No Hands — calibrate fingerspelling</title>
+	</head>
+	<body>
+		<h1>Calibrate fingerspelling</h1>
+		<p class="help">
+			Pick a letter, hold the ASL hand shape, press <kbd>Space</kbd> (or Capture) ~15–20 times while slightly varying
+			angle and distance. The live prediction below tells you when it works. Samples are saved in this browser;
+			<strong>Export</strong> and commit the file as <code>public/samples/asl-samples.json</code> to bundle them.
+		</p>
+
+		<div class="columns">
+			<div class="viewport">
+				<video></video>
+				<canvas></canvas>
+				<div class="prediction">prediction: <strong data-prediction>—</strong></div>
+			</div>
+
+			<div class="panel">
+				<div class="letters" data-letters></div>
+				<div class="actions">
+					<button data-capture>Capture (Space)</button>
+					<button data-delete-letter>Delete letter samples</button>
+					<button data-export>Export JSON</button>
+					<label class="import-label">
+						Import JSON
+						<input type="file" accept="application/json" data-import hidden />
+					</label>
+					<button data-clear class="danger">Clear all</button>
+				</div>
+				<p class="totals" data-totals></p>
+			</div>
+		</div>
+
+		<p><a href={withBase("")}>← back to the deck</a></p>
+
+		<script>
+			import { acquireCamera, attachPreview } from "../lib/camera";
+			import { subscribeVision } from "../lib/vision";
+			import { syncCanvasSize, clearCanvas, drawHands } from "../lib/draw";
+			import {
+				normalizeLandmarks,
+				KnnClassifier,
+				loadSamples,
+				saveSamples,
+				SUPPORTED_LETTERS,
+				type Sample,
+			} from "../lib/fingerspell";
+
+			const video = document.querySelector("video")!;
+			const canvas = document.querySelector("canvas")!;
+			const predictionEl = document.querySelector<HTMLElement>("[data-prediction]")!;
+			const lettersEl = document.querySelector<HTMLElement>("[data-letters]")!;
+			const totalsEl = document.querySelector<HTMLElement>("[data-totals]")!;
+
+			let samples: Sample[] = [];
+			let classifier = new KnnClassifier(samples);
+			let selected = SUPPORTED_LETTERS[0];
+			let currentVec: number[] | null = null;
+
+			function refresh() {
+				classifier = new KnnClassifier(samples);
+				saveSamples(samples);
+				const counts = new Map<string, number>();
+				for (const s of samples) counts.set(s.label, (counts.get(s.label) ?? 0) + 1);
+				lettersEl.innerHTML = "";
+				for (const letter of SUPPORTED_LETTERS) {
+					const btn = document.createElement("button");
+					btn.className = "letter-btn" + (letter === selected ? " selected" : "");
+					btn.innerHTML = `${letter}<small>${counts.get(letter) ?? 0}</small>`;
+					btn.addEventListener("click", () => {
+						selected = letter;
+						refresh();
+					});
+					lettersEl.appendChild(btn);
+				}
+				totalsEl.textContent = `${samples.length} samples total — recording “${selected}”`;
+			}
+
+			function capture() {
+				if (!currentVec) return;
+				samples.push({ label: selected, vec: currentVec });
+				refresh();
+			}
+
+			document.querySelector("[data-capture]")!.addEventListener("click", capture);
+			document.addEventListener("keydown", (e) => {
+				if (e.code === "Space") {
+					e.preventDefault();
+					capture();
+				}
+			});
+
+			document.querySelector("[data-delete-letter]")!.addEventListener("click", () => {
+				samples = samples.filter((s) => s.label !== selected);
+				refresh();
+			});
+
+			document.querySelector("[data-clear]")!.addEventListener("click", () => {
+				if (confirm("Delete ALL recorded samples?")) {
+					samples = [];
+					refresh();
+				}
+			});
+
+			document.querySelector("[data-export]")!.addEventListener("click", () => {
+				const blob = new Blob([JSON.stringify(samples)], { type: "application/json" });
+				const a = document.createElement("a");
+				a.href = URL.createObjectURL(blob);
+				a.download = "asl-samples.json";
+				a.click();
+				URL.revokeObjectURL(a.href);
+			});
+
+			document.querySelector<HTMLInputElement>("[data-import]")!.addEventListener("change", async (e) => {
+				const file = (e.target as HTMLInputElement).files?.[0];
+				if (!file) return;
+				const parsed = JSON.parse(await file.text()) as Sample[];
+				if (Array.isArray(parsed)) {
+					samples = parsed;
+					refresh();
+				}
+			});
+
+			async function main() {
+				samples = await loadSamples();
+				refresh();
+				const camera = acquireCamera();
+				await attachPreview(video, await camera.stream);
+				subscribeVision({ hands: true }, (results) => {
+					syncCanvasSize(canvas, results.video);
+					clearCanvas(canvas);
+					if (results.hands) drawHands(canvas, results.hands);
+					const landmarks = results.hands?.landmarks[0];
+					if (landmarks) {
+						const isLeft = results.hands!.handedness[0]?.[0]?.categoryName === "Left";
+						currentVec = normalizeLandmarks(landmarks, isLeft);
+						const prediction = classifier.classify(currentVec);
+						predictionEl.textContent = prediction
+							? `${prediction.label} (${Math.round(prediction.confidence * 100)}%)`
+							: "?";
+					} else {
+						currentVec = null;
+						predictionEl.textContent = "—";
+					}
+				});
+			}
+
+			main().catch((err) => {
+				predictionEl.textContent = `camera error: ${err instanceof Error ? err.message : err}`;
+			});
+		</script>
+
+		<style>
+			body {
+				font-family: system-ui, sans-serif;
+				background: #0c1a2a;
+				color: #e2e8f0;
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 24px;
+			}
+			.help {
+				color: #94a3b8;
+				max-width: 70ch;
+			}
+			kbd,
+			code {
+				background: #1e293b;
+				padding: 1px 6px;
+				border-radius: 4px;
+			}
+			.columns {
+				display: flex;
+				gap: 24px;
+				align-items: flex-start;
+				flex-wrap: wrap;
+			}
+			.viewport {
+				position: relative;
+				width: 560px;
+				max-width: 100%;
+				aspect-ratio: 16 / 9;
+				background: #06101d;
+				border-radius: 12px;
+				overflow: hidden;
+			}
+			.viewport video,
+			.viewport canvas {
+				position: absolute;
+				inset: 0;
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				transform: scaleX(-1);
+			}
+			.prediction {
+				position: absolute;
+				bottom: 8px;
+				left: 8px;
+				background: rgb(0 0 0 / 0.65);
+				padding: 4px 10px;
+				border-radius: 999px;
+				font-family: monospace;
+			}
+			.prediction strong {
+				color: #4ade80;
+			}
+			.panel {
+				flex: 1;
+				min-width: 320px;
+			}
+			.letters {
+				display: grid;
+				grid-template-columns: repeat(8, 1fr);
+				gap: 6px;
+				margin-bottom: 16px;
+			}
+			.letter-btn {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				padding: 6px 0;
+				border-radius: 8px;
+				border: 1px solid #334155;
+				background: #0f172a;
+				color: #e2e8f0;
+				font-size: 16px;
+				cursor: pointer;
+			}
+			.letter-btn small {
+				color: #64748b;
+				font-size: 11px;
+			}
+			.letter-btn.selected {
+				border-color: #4ade80;
+				color: #4ade80;
+			}
+			.actions {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+			.actions button,
+			.import-label {
+				padding: 8px 14px;
+				border-radius: 8px;
+				border: 1px solid #334155;
+				background: #1e293b;
+				color: #e2e8f0;
+				cursor: pointer;
+				font-size: 14px;
+			}
+			.actions .danger {
+				border-color: #7f1d1d;
+				color: #fca5a5;
+			}
+			.totals {
+				color: #94a3b8;
+				font-family: monospace;
+			}
+			a {
+				color: #4ade80;
+			}
+		</style>
+	</body>
+</html>

@@ -1,0 +1,54 @@
+---
+import Slide from "../components/Slide.astro";
+---
+
+<Slide>
+	<h2>From meaning to control</h2>
+	<ul>
+		<li class="fragment">A letter is a <strong>static pose</strong> — a swipe is a <strong>gesture over time</strong></li>
+		<li class="fragment">Track landmark <em>trails</em>: palm position, pinch distance, hold duration</li>
+		<li class="fragment">
+			The unglamorous part is what makes it usable: <strong>state machines, velocity thresholds, cooldowns</strong>
+		</li>
+	</ul>
+	<table class="mapping fragment">
+		<tbody>
+			<tr><td>🖐️ open palm, swipe left / right</td><td>next / previous slide</td></tr>
+			<tr><td>🤏 pinch spread / close</td><td>zoom in / out</td></tr>
+			<tr><td>✊ fist, hold</td><td>overview / escape</td></tr>
+			<tr><td>🙌 two palms, hold</td><td>fullscreen*</td></tr>
+			<tr><td>⌨️ <code>g</code></td><td>toggle gesture mode</td></tr>
+		</tbody>
+	</table>
+	<p class="footnote fragment">* browsers may require a real key/click for fullscreen — <code>f</code> always works</p>
+	<aside class="notes">
+		One physical motion must fire exactly one command: after each command there's a ~900ms cooldown and all trails
+		reset. Without that, a single swipe fires three "next"s. Keyboard stays active the whole time — gesture mode is
+		additive, never a trap.
+	</aside>
+</Slide>
+
+<style>
+	ul {
+		font-size: 0.7em;
+		text-align: left;
+	}
+	.mapping {
+		margin: 0.6em auto 0;
+		font-size: 0.55em;
+
+		td {
+			padding: 0.15em 0.8em;
+			text-align: left;
+			border-bottom: 1px solid #1e293b;
+		}
+
+		td:last-child {
+			color: #4ade80;
+		}
+	}
+	.footnote {
+		font-size: 0.4em;
+		color: #64748b;
+	}
+</style>

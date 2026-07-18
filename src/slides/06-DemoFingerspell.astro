@@ -1,0 +1,27 @@
+---
+import Slide from "../components/Slide.astro";
+import FingerspellDemo from "../components/FingerspellDemo.astro";
+---
+
+<Slide animate={false}>
+	<h2>🎥 Fingerspelling → subtitles</h2>
+	<FingerspellDemo />
+	<p class="caveat fragment">
+		Honesty break: fingerspelling ≠ sign language. Real ASL has grammar, motion and facial expression — full
+		translation is still open research. This is a building block.
+	</p>
+	<aside class="notes">
+		Spell a short word without J or Z (they need motion): "HELLO", "ZENIKA" won't work — use "HI" or "DEMO". Pause
+		~1.5s with the hand down to end a word. Press 'c' to clear. If letters misfire, samples were recorded on
+		/calibrate — lighting matters.
+	</aside>
+</Slide>
+
+<style>
+	.caveat {
+		font-size: 0.45em;
+		color: #fbbf24;
+		max-width: 80%;
+		margin-inline: auto;
+	}
+</style>

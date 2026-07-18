@@ -1,15 +1,28 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Title from "../slides/Title.astro";
-import WhyAstro from "../slides/WhyAstro.astro";
+import GestureHUD from "../components/GestureHUD.astro";
+import Title from "../slides/01-Title.astro";
+import PixelsToBodies from "../slides/02-PixelsToBodies.astro";
+import UnderTheHood from "../slides/03-UnderTheHood.astro";
+import DemoLandmarks from "../slides/04-DemoLandmarks.astro";
+import LandmarksToMeaning from "../slides/05-LandmarksToMeaning.astro";
+import DemoFingerspell from "../slides/06-DemoFingerspell.astro";
+import GesturesToControl from "../slides/07-GesturesToControl.astro";
+import Finale from "../slides/08-Finale.astro";
 ---
 
-<Layout title="My Awesome Talk Title">
+<Layout title="No Hands — camera body detection in the browser">
 	<main class="reveal">
 		<div class="slides">
 			<Title />
-			<WhyAstro />
-			<!-- Put your slides here -->
+			<PixelsToBodies />
+			<UnderTheHood />
+			<DemoLandmarks />
+			<LandmarksToMeaning />
+			<DemoFingerspell />
+			<GesturesToControl />
+			<Finale />
 		</div>
 	</main>
+	<GestureHUD />
 </Layout>

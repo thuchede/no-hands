@@ -1,0 +1,136 @@
+---
+/**
+ * Demo 1: live camera feed with hand + pose skeletons overlaid.
+ * Starts when its slide becomes visible, fully stops when it's left.
+ */
+---
+
+<div class="camera-demo" data-camera-demo>
+	<div class="viewport">
+		<video></video>
+		<canvas></canvas>
+		<span class="fps-badge">— fps</span>
+		<p class="status">Camera starting…</p>
+	</div>
+	<div class="demo-controls">
+		<label><input type="checkbox" data-toggle="hands" checked /> Hand landmarks (21)</label>
+		<label><input type="checkbox" data-toggle="pose" checked /> Pose landmarks (33)</label>
+	</div>
+</div>
+
+<script>
+	import { acquireCamera, attachPreview } from "../lib/camera";
+	import { subscribeVision } from "../lib/vision";
+	import { syncCanvasSize, clearCanvas, drawHands, drawPose } from "../lib/draw";
+	import { onSlideVisible } from "../lib/deck";
+
+	for (const root of document.querySelectorAll<HTMLElement>("[data-camera-demo]")) {
+		const video = root.querySelector("video")!;
+		const canvas = root.querySelector("canvas")!;
+		const fpsBadge = root.querySelector<HTMLElement>(".fps-badge")!;
+		const status = root.querySelector<HTMLElement>(".status")!;
+		const handsToggle = root.querySelector<HTMLInputElement>('[data-toggle="hands"]')!;
+		const poseToggle = root.querySelector<HTMLInputElement>('[data-toggle="pose"]')!;
+
+		let unsubscribe: (() => void) | null = null;
+		let camera: ReturnType<typeof acquireCamera> | null = null;
+
+		const start = async () => {
+			try {
+				camera = acquireCamera();
+				await attachPreview(video, await camera.stream);
+				status.hidden = true;
+				unsubscribe = subscribeVision({ hands: true, pose: true }, (results) => {
+					syncCanvasSize(canvas, results.video);
+					clearCanvas(canvas);
+					if (handsToggle.checked && results.hands) drawHands(canvas, results.hands);
+					if (poseToggle.checked && results.pose) drawPose(canvas, results.pose);
+					fpsBadge.textContent = `${Math.round(results.fps)} fps`;
+				});
+			} catch (err) {
+				status.hidden = false;
+				status.textContent = `Camera unavailable: ${err instanceof Error ? err.message : err}`;
+			}
+		};
+
+		const stop = () => {
+			unsubscribe?.();
+			unsubscribe = null;
+			camera?.release();
+			camera = null;
+			video.srcObject = null;
+			clearCanvas(canvas);
+			status.hidden = false;
+			status.textContent = "Camera starting…";
+		};
+
+		onSlideVisible(root, start, stop);
+	}
+</script>
+
+<style lang="scss">
+	.camera-demo {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.viewport {
+		position: relative;
+		width: 70%;
+		aspect-ratio: 16 / 9;
+		border-radius: 12px;
+		overflow: hidden;
+		background: #06101d;
+		box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+
+		video,
+		canvas {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transform: scaleX(-1); /* mirror like a mirror, presenter-friendly */
+		}
+	}
+
+	.fps-badge {
+		position: absolute;
+		top: 0.5em;
+		right: 0.7em;
+		font-size: 0.35em;
+		font-family: monospace;
+		background: rgb(0 0 0 / 0.6);
+		padding: 0.2em 0.6em;
+		border-radius: 999px;
+	}
+
+	.status[hidden] {
+		display: none;
+	}
+
+	.status {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		margin: 0;
+		font-size: 0.5em;
+		color: #94a3b8;
+	}
+
+	.demo-controls {
+		display: flex;
+		gap: 1.5em;
+		font-size: 0.5em;
+
+		label {
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			gap: 0.4em;
+		}
+	}
+</style>

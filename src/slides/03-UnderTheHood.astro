@@ -1,0 +1,70 @@
+---
+import Slide from "../components/Slide.astro";
+---
+
+<Slide>
+	<h2>Under the hood: MediaPipe</h2>
+	<div class="columns">
+		<svg class="hand-diagram" viewBox="0 0 200 220" aria-label="21 hand landmarks">
+			<!-- connections -->
+			<g stroke="#4ade80" stroke-width="2.5" fill="none" opacity="0.8">
+				<!-- thumb -->
+				<polyline points="100,205 68,185 48,158 36,134 28,112"></polyline>
+				<!-- index -->
+				<polyline points="100,205 76,130 70,96 66,70 63,46"></polyline>
+				<!-- middle -->
+				<polyline points="100,205 100,126 100,88 100,60 100,34"></polyline>
+				<!-- ring -->
+				<polyline points="100,205 124,130 130,96 134,72 137,50"></polyline>
+				<!-- pinky -->
+				<polyline points="100,205 146,140 158,112 165,92 171,74"></polyline>
+				<!-- palm arc -->
+				<polyline points="76,130 100,126 124,130 146,140"></polyline>
+			</g>
+			<!-- landmarks -->
+			<g fill="#22c55e" stroke="#f0fdf4" stroke-width="1.5">
+				{
+					[
+						[100, 205], [68, 185], [48, 158], [36, 134], [28, 112],
+						[76, 130], [70, 96], [66, 70], [63, 46],
+						[100, 126], [100, 88], [100, 60], [100, 34],
+						[124, 130], [130, 96], [134, 72], [137, 50],
+						[146, 140], [158, 112], [165, 92], [171, 74],
+					].map(([x, y]) => <circle cx={x} cy={y} r="5" />)
+				}
+			</g>
+		</svg>
+		<ul>
+			<li class="fragment">
+				<strong>Two-stage pipeline</strong>: a fast <em>detector</em> finds the palm/person once, a
+				<em>landmark model</em> tracks it frame-to-frame
+			</li>
+			<li class="fragment"><strong>21 landmarks</strong> per hand, <strong>33</strong> for the body — each an (x, y, z) + confidence</li>
+			<li class="fragment">
+				Runs <strong>fully on-device</strong> in the browser: WASM + WebGPU/WebGL —
+				<em>no video ever leaves this machine</em>
+			</li>
+			<li class="fragment">Models are ~5–8&nbsp;MB — smaller than the average hero image</li>
+		</ul>
+	</div>
+	<aside class="notes">
+		The detector is the expensive part, so it only re-runs when tracking is lost — that's why these models hit 30+ fps
+		on a laptop. On-device matters for latency (no round trip) and privacy (nothing uploaded).
+	</aside>
+</Slide>
+
+<style>
+	.columns {
+		display: flex;
+		align-items: center;
+		gap: 1.2em;
+		text-align: left;
+	}
+	ul {
+		font-size: 0.7em;
+	}
+	.hand-diagram {
+		flex-shrink: 0;
+		width: 240px;
+	}
+</style>

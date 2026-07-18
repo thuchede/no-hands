@@ -1,0 +1,118 @@
+---
+/**
+ * Persistent overlay showing gesture-control state, plus the glue that
+ * turns gesture commands into deck actions. Toggle with 'g' or the
+ * button on the finale slide. Lives outside the Reveal viewport so it
+ * survives slide changes (and the zoom transform).
+ */
+---
+
+<div class="gesture-hud" data-gesture-hud hidden>
+	<span class="dot"></span>
+	<span class="hud-label">gestures on</span>
+	<span class="hud-command"></span>
+</div>
+
+<script>
+	import { gestureController, type GestureCommand } from "../lib/gestures";
+	import { deckCommands, onDeckReady } from "../lib/deck";
+
+	const hud = document.querySelector<HTMLElement>("[data-gesture-hud]")!;
+	const commandEl = hud.querySelector<HTMLElement>(".hud-command")!;
+	const labelEl = hud.querySelector<HTMLElement>(".hud-label")!;
+
+	gestureController.addEventListener("state", (e) => {
+		hud.hidden = !(e as CustomEvent<{ enabled: boolean }>).detail.enabled;
+		commandEl.textContent = "";
+	});
+
+	gestureController.addEventListener("frame", (e) => {
+		const label = (e as CustomEvent<{ label: string | null }>).detail.label;
+		labelEl.textContent = label && label !== "None" ? label.replace("_", " ").toLowerCase() : "gestures on";
+	});
+
+	let flashTimer: ReturnType<typeof setTimeout>;
+	gestureController.addEventListener("command", (e) => {
+		const command = (e as CustomEvent<{ command: GestureCommand }>).detail.command;
+		run(command);
+		commandEl.textContent = command;
+		hud.classList.add("flash");
+		clearTimeout(flashTimer);
+		flashTimer = setTimeout(() => {
+			hud.classList.remove("flash");
+			commandEl.textContent = "";
+		}, 1200);
+	});
+
+	function run(command: GestureCommand) {
+		switch (command) {
+			case "next":
+				return deckCommands.next();
+			case "prev":
+				return deckCommands.prev();
+			case "zoom-in":
+				return deckCommands.zoomIn();
+			case "zoom-out":
+				return deckCommands.zoomOut();
+			case "overview":
+				return deckCommands.overview();
+			case "fullscreen":
+				return deckCommands.fullscreen();
+		}
+	}
+
+	// 'g' toggles gesture mode anywhere in the deck; Escape also resets zoom.
+	onDeckReady(() => {
+		document.addEventListener("keydown", (e) => {
+			if (e.key === "g" && !e.metaKey && !e.ctrlKey && !e.altKey) gestureController.toggle();
+			if (e.key === "Escape") deckCommands.escape();
+		});
+	});
+</script>
+
+<style lang="scss">
+	.gesture-hud[hidden] {
+		display: none;
+	}
+
+	.gesture-hud {
+		position: fixed;
+		bottom: 16px;
+		right: 16px;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 8px 14px;
+		border-radius: 999px;
+		background: rgb(2 12 24 / 0.85);
+		border: 1px solid rgb(74 222 128 / 0.35);
+		font-family: monospace;
+		font-size: 14px;
+		color: #e2e8f0;
+		transition: border-color 0.2s ease;
+
+		&.flash {
+			border-color: #4ade80;
+		}
+
+		.dot {
+			width: 9px;
+			height: 9px;
+			border-radius: 50%;
+			background: #4ade80;
+			animation: hud-pulse 1.6s ease-in-out infinite;
+		}
+
+		.hud-command {
+			color: #4ade80;
+			font-weight: bold;
+		}
+	}
+
+	@keyframes hud-pulse {
+		50% {
+			opacity: 0.35;
+		}
+	}
+</style>

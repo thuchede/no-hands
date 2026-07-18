@@ -1,0 +1,13 @@
+---
+import Slide from "../components/Slide.astro";
+import CameraDemo from "../components/CameraDemo.astro";
+---
+
+<Slide animate={false}>
+	<h2>🎥 See what the model sees</h2>
+	<CameraDemo />
+	<aside class="notes">
+		Wave, wiggle fingers, step back to show the full pose skeleton. Point out the FPS badge — this is real-time, local
+		inference. Toggle hands/pose to show they are two independent models sharing one camera.
+	</aside>
+</Slide>
