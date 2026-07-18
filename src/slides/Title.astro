@@ -1,0 +1,10 @@
+---
+import Slide from "../components/Slide.astro";
+import { currentEvent } from "../events";
+---
+
+<Slide>
+	<h1>Talk Title</h1>
+	<p>{currentEvent.name}</p>
+	<p>{currentEvent.date}</p>
+</Slide>
