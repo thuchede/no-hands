@@ -1,0 +1,30 @@
+---
+import Slide from "../components/Slide.astro";
+import { withBase } from "../lib/paths";
+---
+
+<Slide animate={false}>
+	<h2>The inspiration</h2>
+	<img class="inspiration-image" src={withBase("min.jpg")} alt="Minority Report: gesture-controlled interface" />
+	<p class="caption"><em>Minority Report</em> (2002) — waving at screens looked like the future. It's now a webcam and a browser tab.</p>
+	<aside class="notes">
+		Everyone remembers this scene: gloves, giant screens, hands in the air. The gap between that fantasy and reality
+		used to be special hardware — today the "gloves" are an ML model watching a plain webcam.
+	</aside>
+</Slide>
+
+<style>
+	.inspiration-image {
+		display: block;
+		margin: 0.4em auto 0;
+		max-width: 70%;
+		max-height: 55vh;
+		border-radius: 12px;
+		box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+	}
+
+	.caption {
+		font-size: 0.5em;
+		color: #94a3b8;
+	}
+</style>

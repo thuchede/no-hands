@@ -14,17 +14,18 @@ inference runs on-device in the browser (WASM/WebGPU), no video ever leaves the 
 | # | Slide | What happens |
 |---|-------|--------------|
 | 1 | No Hands | title + hook |
-| 2 | How does a computer see a body? | pixels → CNNs → landmark regression |
-| 3 | Under the hood: MediaPipe | two-stage pipeline, 21/33 landmarks, on-device |
-| 4 | 🎥 See what the model sees | live hand + pose skeleton overlay |
-| 5 | From landmarks to meaning | normalize 63-dim vectors, tiny kNN classifier |
-| 6 | 🎥 Fingerspelling → subtitles | ASL letters typed live as subtitles |
-| 7 | From meaning to control | temporal gestures, state machines, cooldowns |
-| 8 | 🎥 Watch it watch you | live gesture recognition + practice toggle |
-| 9–11 | 1 / 2 / 3 | big-number slides to make gesture navigation visible |
-| 12 | What I learned | takeaways before the close |
-| 13 | Questions? | Q&A, still gesture-navigable |
-| 14 | Thanks! | credits: jsulpis template, MediaPipe, Reveal.js, Astro |
+| 2 | The inspiration | Minority Report (2002) — the scene we're recreating |
+| 3 | How does a computer see a body? | pixels → CNNs → landmark regression |
+| 4 | Under the hood: MediaPipe | two-stage pipeline, 21/33 landmarks, on-device |
+| 5 | 🎥 See what the model sees | live hand + pose skeleton overlay |
+| 6 | From landmarks to meaning | normalize 63-dim vectors, tiny kNN classifier |
+| 7 | 🎥 Fingerspelling → subtitles | ASL letters typed live as subtitles |
+| 8 | From meaning to control | temporal gestures, state machines, cooldowns |
+| 9 | 🎥 Watch it watch you | live gesture recognition + practice toggle |
+| 10–12 | 1 / 2 / 3 | big-number slides to make gesture navigation visible |
+| 13 | What I learned | takeaways before the close |
+| 14 | Questions? | Q&A, still gesture-navigable |
+| 15 | Thanks! | credits: jsulpis template, MediaPipe, Reveal.js, Astro |
 
 ## Commands
 
