@@ -1,0 +1,39 @@
+---
+import Slide from "../components/Slide.astro";
+---
+
+<Slide>
+	<h2>What I learned</h2>
+	<ul class="learnings">
+		<li class="fragment">
+			🧩 <strong>Use existing small models</strong> for specialized tasks — a few MB of landmarker beats training
+			anything yourself
+		</li>
+		<li class="fragment">
+			📊 <strong>The more training data, the better</strong> — the fingerspelling demo lives and dies by its recorded
+			samples
+		</li>
+		<li class="fragment">
+			⚡ In the age of AI, coming up with a <strong>fun working demo took less time than I expected</strong>
+		</li>
+	</ul>
+	<aside class="notes">
+		Wrap-up before Q&A: the heavy lifting was already done by MediaPipe's pretrained models; our own "ML" is a kNN over
+		samples recorded in five minutes; and the whole deck came together surprisingly fast.
+	</aside>
+</Slide>
+
+<style>
+	.learnings {
+		list-style: none;
+		margin: 0.8em auto 0;
+		padding: 0;
+		max-width: 85%;
+		text-align: left;
+		font-size: 0.7em;
+
+		li {
+			margin: 0.9em 0;
+		}
+	}
+</style>
