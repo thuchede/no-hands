@@ -1,0 +1,53 @@
+---
+import Slide from "../components/Slide.astro";
+import { currentEvent } from "../events";
+---
+
+<Slide animate={false}>
+	<h2>Thanks!</h2>
+	<ul class="credits">
+		<li>
+			🙏 <a href="https://github.com/jsulpis/slides-template">jsulpis/slides-template</a>
+			<span>— the Reveal.js + Astro template this deck is built on</span>
+		</li>
+		<li>
+			🖐️ <a href="https://ai.google.dev/edge/mediapipe/solutions/vision">@mediapipe/tasks-vision</a>
+			<span>— hand &amp; pose landmarks, gesture recognition, on-device</span>
+		</li>
+		<li>
+			🎞️ <a href="https://revealjs.com">Reveal.js</a> · <a href="https://astro.build">Astro</a>
+			<span>— slides &amp; static site</span>
+		</li>
+		<li>
+			💻 <a href={currentEvent.someUrl}>{currentEvent.someUrl.replace("https://", "")}</a>
+			<span>— all the code behind this deck</span>
+		</li>
+	</ul>
+	<aside class="notes">Credits slide — leave it up while people take photos of the links.</aside>
+</Slide>
+
+<style>
+	.credits {
+		list-style: none;
+		margin: 0.5em auto 0;
+		padding: 0;
+		width: fit-content;
+		text-align: left;
+		font-size: 0.6em;
+
+		li {
+			margin: 0.7em 0;
+		}
+
+		a {
+			color: #4ade80;
+		}
+
+		span {
+			display: block;
+			margin-left: 1.7em;
+			font-size: 0.7em;
+			color: #94a3b8;
+		}
+	}
+</style>

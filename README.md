@@ -23,6 +23,8 @@ inference runs on-device in the browser (WASM/WebGPU), no video ever leaves the 
 | 8 | 🎥 Watch it watch you | live gesture recognition + practice toggle |
 | 9–10 | 1 / 2 | big-number slides to make gesture navigation visible |
 | 11 | 🎥 No hands. | enable gesture mode, drive the deck hands-free |
+| 12 | Questions? | Q&A, still gesture-navigable |
+| 13 | Thanks! | credits: jsulpis template, MediaPipe, Reveal.js, Astro |
 
 ## Commands
 
