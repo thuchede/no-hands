@@ -13,6 +13,12 @@ const readyCallbacks: Array<(deck: DeckApi) => void> = [];
 /** Called once from the layout after Reveal.initialize() resolves. */
 export function registerDeck(instance: DeckApi) {
 	deck = instance;
+	// Reveal only forces a re-layout when its own wrapper is fullscreened;
+	// entering fullscreen on the root element (our case, and Reveal's F key)
+	// can leave the slides mis-scaled or seemingly blank without this.
+	document.addEventListener("fullscreenchange", () => {
+		setTimeout(() => instance.layout(), 50);
+	});
 	for (const cb of readyCallbacks.splice(0)) cb(instance);
 }
 

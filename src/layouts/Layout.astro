@@ -39,6 +39,15 @@ const { title } = Astro.props;
 	@import "reveal.js/dist/theme/night.css";
 	@import "../../src/styles/highlightjs-theme-vs2015.css";
 
+	// Explicit background on the root elements: in fullscreen, Chrome paints
+	// the root canvas black instead of inheriting the body/theme background
+	// (https://github.com/hakimel/reveal.js/issues/1516).
+	html,
+	body,
+	.reveal-viewport {
+		background: #0c1a2a;
+	}
+
 	main,
 	.slide-background-content {
 		background: linear-gradient(#133055, #0c1a2a);

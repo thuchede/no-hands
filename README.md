@@ -20,7 +20,9 @@ inference runs on-device in the browser (WASM/WebGPU), no video ever leaves the 
 | 5 | From landmarks to meaning | normalize 63-dim vectors, tiny kNN classifier |
 | 6 | 🎥 Fingerspelling → subtitles | ASL letters typed live as subtitles |
 | 7 | From meaning to control | temporal gestures, state machines, cooldowns |
-| 8 | 🎥 No hands. | enable gesture mode, drive the deck hands-free |
+| 8 | 🎥 Watch it watch you | live gesture recognition + practice toggle |
+| 9–10 | 1 / 2 | big-number slides to make gesture navigation visible |
+| 11 | 🎥 No hands. | enable gesture mode, drive the deck hands-free |
 
 ## Commands
 

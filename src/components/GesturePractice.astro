@@ -1,0 +1,179 @@
+---
+/**
+ * Practice view for gesture control: camera feed with hand skeletons,
+ * the gesture currently recognized by the model, and the last deck
+ * command fired. Detection display always runs while the slide is
+ * visible; commands only fire once gesture mode is enabled.
+ */
+---
+
+<div class="gesture-practice" data-gesture-practice>
+	<div class="viewport">
+		<video></video>
+		<canvas></canvas>
+		<p class="status">Camera starting…</p>
+		<span class="gesture-badge">—</span>
+		<span class="command-badge" hidden></span>
+	</div>
+	<button class="toggle-gestures" data-toggle-gestures>🖐️ Enable gesture control</button>
+</div>
+
+<script>
+	import { acquireCamera, attachPreview } from "../lib/camera";
+	import { subscribeVision } from "../lib/vision";
+	import { syncCanvasSize, clearCanvas, drawHands } from "../lib/draw";
+	import { onSlideVisible } from "../lib/deck";
+	import { gestureController, type GestureCommand } from "../lib/gestures";
+
+	for (const root of document.querySelectorAll<HTMLElement>("[data-gesture-practice]")) {
+		const video = root.querySelector("video")!;
+		const canvas = root.querySelector("canvas")!;
+		const status = root.querySelector<HTMLElement>(".status")!;
+		const gestureBadge = root.querySelector<HTMLElement>(".gesture-badge")!;
+		const commandBadge = root.querySelector<HTMLElement>(".command-badge")!;
+		const toggleButton = root.querySelector<HTMLButtonElement>("[data-toggle-gestures]")!;
+
+		let unsubscribe: (() => void) | null = null;
+		let camera: ReturnType<typeof acquireCamera> | null = null;
+
+		const start = async () => {
+			try {
+				camera = acquireCamera();
+				await attachPreview(video, await camera.stream);
+				status.hidden = true;
+				unsubscribe = subscribeVision({ gestures: true }, (results) => {
+					syncCanvasSize(canvas, results.video);
+					clearCanvas(canvas);
+					if (results.gestures) {
+						drawHands(canvas, results.gestures);
+						const labels = results.gestures.gestures
+							.map((g) => g[0])
+							.filter((g) => g && g.categoryName !== "None")
+							.map((g) => `${g.categoryName.replace(/_/g, " ")} ${Math.round(g.score * 100)}%`);
+						gestureBadge.textContent = labels.join(" + ") || (results.gestures.landmarks.length ? "…" : "—");
+					}
+				});
+			} catch (err) {
+				status.hidden = false;
+				status.textContent = `Camera unavailable: ${err instanceof Error ? err.message : err}`;
+			}
+		};
+
+		const stop = () => {
+			unsubscribe?.();
+			unsubscribe = null;
+			camera?.release();
+			camera = null;
+			video.srcObject = null;
+			clearCanvas(canvas);
+			status.hidden = false;
+			status.textContent = "Camera starting…";
+		};
+
+		onSlideVisible(root, start, stop);
+
+		toggleButton.addEventListener("click", () => gestureController.toggle());
+		gestureController.addEventListener("state", (e) => {
+			const enabled = (e as CustomEvent<{ enabled: boolean }>).detail.enabled;
+			toggleButton.textContent = enabled ? "🖐️ Disable gesture control" : "🖐️ Enable gesture control";
+			toggleButton.classList.toggle("active", enabled);
+		});
+
+		let flashTimer: ReturnType<typeof setTimeout>;
+		gestureController.addEventListener("command", (e) => {
+			commandBadge.textContent = `⚡ ${(e as CustomEvent<{ command: GestureCommand }>).detail.command}`;
+			commandBadge.hidden = false;
+			clearTimeout(flashTimer);
+			flashTimer = setTimeout(() => (commandBadge.hidden = true), 1200);
+		});
+	}
+</script>
+
+<style lang="scss">
+	.gesture-practice {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5em;
+	}
+
+	.viewport {
+		position: relative;
+		width: 65%;
+		aspect-ratio: 16 / 9;
+		border-radius: 12px;
+		overflow: hidden;
+		background: #06101d;
+		box-shadow: 0 8px 30px rgb(0 0 0 / 0.5);
+
+		video,
+		canvas {
+			position: absolute;
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transform: scaleX(-1);
+		}
+	}
+
+	.status[hidden],
+	.command-badge[hidden] {
+		display: none;
+	}
+
+	.status {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		margin: 0;
+		font-size: 0.5em;
+		color: #94a3b8;
+	}
+
+	.gesture-badge {
+		position: absolute;
+		top: 0.5em;
+		left: 0.6em;
+		font-size: 0.42em;
+		font-family: monospace;
+		background: rgb(0 0 0 / 0.65);
+		padding: 0.3em 0.8em;
+		border-radius: 999px;
+		color: #4ade80;
+	}
+
+	.command-badge {
+		position: absolute;
+		bottom: 0.5em;
+		right: 0.6em;
+		font-size: 0.5em;
+		font-family: monospace;
+		font-weight: bold;
+		background: rgb(74 222 128 / 0.9);
+		color: #06101d;
+		padding: 0.25em 0.7em;
+		border-radius: 999px;
+	}
+
+	.toggle-gestures {
+		font-size: 0.5em;
+		font-family: inherit;
+		padding: 0.5em 1.2em;
+		border-radius: 10px;
+		border: 2px solid #4ade80;
+		background: rgb(74 222 128 / 0.12);
+		color: #4ade80;
+		cursor: pointer;
+
+		&:hover {
+			background: rgb(74 222 128 / 0.25);
+		}
+
+		&.active {
+			background: #4ade80;
+			color: #06101d;
+		}
+	}
+</style>

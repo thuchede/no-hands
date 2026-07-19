@@ -7,7 +7,7 @@ import {
 	DrawingUtils,
 	HandLandmarker,
 	PoseLandmarker,
-	type HandLandmarkerResult,
+	type NormalizedLandmark,
 	type PoseLandmarkerResult,
 } from "@mediapipe/tasks-vision";
 
@@ -34,7 +34,8 @@ export function clearCanvas(canvas: HTMLCanvasElement) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-export function drawHands(canvas: HTMLCanvasElement, result: HandLandmarkerResult) {
+/** Accepts HandLandmarker and GestureRecognizer results alike. */
+export function drawHands(canvas: HTMLCanvasElement, result: { landmarks: NormalizedLandmark[][] }) {
 	const { utils } = getUtils(canvas);
 	for (const landmarks of result.landmarks) {
 		utils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, { color: "#4ade80", lineWidth: 4 });
